@@ -7,8 +7,7 @@ from tornado.ioloop import IOLoop, PeriodicCallback
 
 
 
-import websockets
-import asyncio
+from ImageHandler import ImageHandler
 
 
 
@@ -16,23 +15,6 @@ class MainHandler(tornado.websocket.WebSocketHandler):
     def get(self):
         self.write("Hello, world")
 
-    
-
-class Cheese():
-
-    def __init__(self):
-        self.hello()
-
-
-    async def hello(self):
-        print("trying to connect")
-        url = "ws://localhost:3001"
-        conn = await websocket_connect(url)
-        while True:
-            msg = yield conn.read_message()
-            if msg is None: break
-    # Do something with msg
-    # Do something with msg
 
 # Note to self - don't subclass websockethandler
 class Client(object):
@@ -41,6 +23,7 @@ class Client(object):
         self.timeout = timeout
         self.ioloop = IOLoop.instance()
         self.ws = None
+        self.imgHandler = ImageHandler()
         self.connect()
         PeriodicCallback(self.keep_alive, 20000).start()
         self.ioloop.start()
@@ -64,7 +47,7 @@ class Client(object):
                 print ("connection closed")
                 self.ws = None
                 break
-            print(msg)
+            self.imgHandler.convertFromBlob(msg)
 
     def keep_alive(self):
         if self.ws is None:
@@ -81,6 +64,6 @@ def make_app():
 if __name__ == "__main__":
     app = make_app()
     app.listen(3000)
-    client = Client("ws://192.168.4.22:80", 5)
+    client = Client("ws://192.168.0.52:80", 5)
 
   
