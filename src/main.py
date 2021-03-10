@@ -17,7 +17,7 @@ class MainHandler(tornado.websocket.WebSocketHandler):
 
 
 # Note to self - don't subclass websockethandler
-class Client(object):
+class Client(tornado.websocket.WebSocketHandler):
     def __init__(self, url, timeout):
         self.url = url
         self.timeout = timeout
@@ -42,12 +42,13 @@ class Client(object):
     @gen.coroutine
     def run(self):
         while True:
+            #MARK: improve 
             msg = yield self.ws.read_message()
             if msg is None:
                 print ("connection closed")
                 self.ws = None
                 break
-            self.imgHandler.convertFromBlob(msg)
+            self.imgHandler.handleImageBlob(msg)
 
     def keep_alive(self):
         if self.ws is None:
@@ -56,9 +57,11 @@ class Client(object):
             self.ws.write_message("keep alive")
 
 
+
+
 def make_app():
     return tornado.web.Application([
-        (r"/", MainHandler),
+        (r"/", Client),
     ])
 
 if __name__ == "__main__":
