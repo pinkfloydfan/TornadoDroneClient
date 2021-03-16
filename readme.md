@@ -4,5 +4,4 @@ The ESP32 hosts a websocket server. Its IP address is hardcoded into this progra
 
 # To run
 
-- Install Tornado (venv preferred): pip3 install tornado
-- Install OpenCV
+- Install Tornado (venv preferred): python3 -m pip install tornado
