@@ -23,7 +23,7 @@ class Client(tornado.websocket.WebSocketHandler):
         self.timeout = timeout
         self.ioloop = IOLoop.instance()
         self.ws = None
-        self.roshandler = RosHandler()
+        self.rosHandler = RosHandler()
         self.connect()
         PeriodicCallback(self.keep_alive, 20000).start()
         self.ioloop.start()
@@ -48,8 +48,7 @@ class Client(tornado.websocket.WebSocketHandler):
                 print ("connection closed")
                 self.ws = None
                 break
-            print("received something")
-            # self.imgHandler.handleImageBlob(msg)
+            self.rosHandler.handleImageBlob(msg)
 
     def keep_alive(self):
         if self.ws is None:
