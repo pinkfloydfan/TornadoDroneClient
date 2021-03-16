@@ -5,5 +5,5 @@ The ESP32 hosts a websocket server. Its IP address is hardcoded into this progra
 # To run
 
 - Rust compiler needed to build roslibpy
-- Install Tornado (venv preferred): 'python3 -m pip install tornado'
-- Install Roslibpy: 'pip install roslibpy'
+- Install Tornado (venv preferred): `python3 -m pip install tornado`
+- Install Roslibpy: `pip install roslibpy`
