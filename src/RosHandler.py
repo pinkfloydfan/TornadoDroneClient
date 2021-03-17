@@ -19,7 +19,7 @@ class RosHandler:
         self.showRawCapture = True
 
     def handleImageBlob(self, blob):
-        #imageMessage = self.convertFromBlob(blob)
+        #imageMessage = self.convertFromBlobaxis_camera(blob)
 
         nparr = np.frombuffer(blob, np.uint8)
 
@@ -32,7 +32,6 @@ class RosHandler:
             cv2.waitKey(1)
 
         imgmsg = dict(format='jpeg', data = b64encoded)
-        print(imgmsg)
 
         #imageMessage = self.bridge.cv2_to_imgmsg(img, encoding = "passthrough")
 
