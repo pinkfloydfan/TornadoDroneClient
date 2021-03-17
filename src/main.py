@@ -67,6 +67,6 @@ def make_app():
 if __name__ == "__main__":
     app = make_app()
     app.listen(3000)
-    client = Client("ws://192.168.0.52:80", 5)
+    client = Client("ws://192.168.4.22:80", 5)
 
   

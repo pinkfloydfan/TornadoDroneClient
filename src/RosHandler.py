@@ -13,7 +13,7 @@ class RosHandler:
         self.client.run()
         self.bridge = CvBridge()
         
-        self.publisher = roslibpy.Topic(self.client, '/camera/image_compressed', 'sensor_msgs/CompressedImage')
+        self.publisher = roslibpy.Topic(self.client, '/camera/image_compressed/compressed', 'sensor_msgs/CompressedImage')
         self.publisher.advertise()
 
         self.showRawCapture = True
