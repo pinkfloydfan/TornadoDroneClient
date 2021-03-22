@@ -1,22 +1,41 @@
+
 import roslibpy
 import cv2
 from cv_bridge import CvBridge
 import numpy as np
 import base64
 
-class RosHandler:
+class RosHandler():
 
 
-    def __init__(self): 
+    def __init__(self, parentRef): 
+
+        self.joystickMessage = [0,0,0,0,0,0,0,0]
+
+        self.parentRef = parentRef
+
+        self.ioloop = parentRef.ioloop
+
         self.client = roslibpy.Ros(host="localhost", port = 9090)
         self.client.on_ready(lambda: print('Is ROS connected?', self.client.is_connected))
         self.client.run()
         self.bridge = CvBridge()
         
         self.publisher = roslibpy.Topic(self.client, '/camera/image_compressed/compressed', 'sensor_msgs/CompressedImage')
+
+        self.listener = roslibpy.Topic(self.client, '/joy', 'sensor_msgs/Joy')
+        self.listener.subscribe(lambda message: self.handleJoystickMessage(message))
+
         self.publisher.advertise()
 
+
+
         self.showRawCapture = True
+
+    def handleJoystickMessage(self, message):
+        self.joystickMessage = message["axes"]
+
+    
 
     def handleImageBlob(self, blob):
         #imageMessage = self.convertFromBlobaxis_camera(blob)

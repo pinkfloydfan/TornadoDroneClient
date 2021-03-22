@@ -36,9 +36,7 @@ class ImageHandler:
         nparr = np.frombuffer(blob, np.uint8)
         img = cv2.imdecode(nparr, flags=cv2.IMREAD_GRAYSCALE)
 
-        if self.showRawCapture == True:
-            cv2.imshow("yes", img)
-            cv2.waitKey(1)
+ 
 
         return img
 
