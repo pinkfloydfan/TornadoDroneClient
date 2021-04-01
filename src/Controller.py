@@ -17,9 +17,15 @@ class Controller:
         self.velocityY = 0
         self.velocityZ = 0
 
+        self.vxhist = [0]
+        self.vyhist = [0]
+        self.vzhist = [0]
+
+        self.time = [0]
 
 
-    def processPoseMessage(self, msg):
+
+    def processPoseMessage(self, msg, callback):
 
         currentPosition = msg["pose"]["position"]
         currentOrientation = msg["pose"]["orientation"]
@@ -32,11 +38,15 @@ class Controller:
         vy = (currentPosition["y"] - self.previousPosition[1])/dt
         vz = (currentPosition["z"] - self.previousPosition[2])/dt
 
+
         self.previousPosition = [currentPosition["x"], currentPosition["y"], currentPosition["z"]]
         self.previousTime = currentTime
 
+        #print("vx: " + str(vx) + ", " + "vy: " + str(vy) + ", " + "vz: " + str(vz))
 
-        print("vx: " + str(vx) + ", " + "vy: " + str(vy) + ", " + "vz: " + str(vz))
+        returnArr = [vx,vy,vz]
+
+        callback(returnArr)
 
 
 

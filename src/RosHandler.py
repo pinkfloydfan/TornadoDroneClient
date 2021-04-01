@@ -7,6 +7,7 @@ import base64
 from cv_bridge import CvBridge
 from Controller import Controller
 
+
 # class in charge of RosLibPy and parsing/sending ROS messages
 class RosHandler():
 
@@ -26,7 +27,8 @@ class RosHandler():
         self.client.run()
         self.bridge = CvBridge()
 
-
+        self.velocityPublisher = roslibpy.Topic(self.client, '/minion/velocity', 'std_msgs/Float32MultiArray')
+        self.velocityPublisher.advertise()
         
         self.imagePublisher = roslibpy.Topic(self.client, '/camera/image_compressed/compressed', 'sensor_msgs/CompressedImage')
         self.imagePublisher.advertise()
@@ -44,7 +46,7 @@ class RosHandler():
 
     def handlePoseMessage(self, message):
 
-        self.controller.processPoseMessage(message)
+        self.controller.processPoseMessage(message, self.publishVelocityCallback)
 
     def handleJoystickMessage(self, message):
         self.joystickMessage = message["axes"]
@@ -83,3 +85,8 @@ class RosHandler():
         print("pitch: " + pitch)
         print("yaw: " + yaw)
         '''
+
+
+    def publishVelocityCallback(self, velocity):
+
+        self.velocityPublisher.publish(roslibpy.Message({"data":velocity}))
