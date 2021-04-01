@@ -1,28 +1,32 @@
 
 import roslibpy
 import cv2
-from cv_bridge import CvBridge
 import numpy as np
 import base64
-import datetime
 
+from cv_bridge import CvBridge
+from Controller import Controller
+
+# class in charge of RosLibPy and parsing/sending ROS messages
 class RosHandler():
 
 
     def __init__(self, parentRef): 
 
         self.joystickMessage = [0,0,0,0,0,0,0,0]
-        self.slamPosition = [0,0,0]
-        self.slamOrientation = [0,0,0,1]
 
         self.parentRef = parentRef
 
         self.ioloop = parentRef.ioloop
 
+        self.controller = Controller()
+        
         self.client = roslibpy.Ros(host="localhost", port = 9090)
         self.client.on_ready(lambda: print('Is ROS connected?', self.client.is_connected))
         self.client.run()
         self.bridge = CvBridge()
+
+
         
         self.imagePublisher = roslibpy.Topic(self.client, '/camera/image_compressed/compressed', 'sensor_msgs/CompressedImage')
         self.imagePublisher.advertise()
@@ -33,7 +37,6 @@ class RosHandler():
         self.poseListener = roslibpy.Topic(self.client, '/orb_slam2_mono/pose', 'geometry_msgs/PoseStamped')
         self.poseListener.subscribe(lambda message: self.handlePoseMessage(message))
 
-        self.previousTime = datetime.datetime.now()
         
         self.showRawCapture = True
 
@@ -41,19 +44,7 @@ class RosHandler():
 
     def handlePoseMessage(self, message):
 
-  
-
-        
-        self.slamPosition = message["pose"]["position"]
-        self.slamOrientation = message["pose"]["orientation"] 
-
-        newTime = datetime.datetime.now()
-
-        delta_t = (newTime - self.previousTime).microseconds
-
-        print(delta_t)
-
-        self.previousTime = newTime
+        self.controller.processPoseMessage(message)
 
     def handleJoystickMessage(self, message):
         self.joystickMessage = message["axes"]
@@ -83,10 +74,12 @@ class RosHandler():
 
         attitudeList = msg.split(',');
 
-        roll  = msg[0]
-        pitch = msg[1]
-        yaw   = msg[2]
-
+        roll  = attitudeList[0]
+        pitch = attitudeList[1]
+        yaw   = attitudeList[2]
+        
+        '''
         print("roll: " + roll)
         print("pitch: " + pitch)
         print("yaw: " + yaw)
+        '''

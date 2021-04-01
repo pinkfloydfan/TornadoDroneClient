@@ -1,4 +1,9 @@
-from 
+#from scipy import rot
+import datetime
+
+#visualization
+import matplotlib.pyplot as plt
+import matplotlib.animation as animation
 
 class Controller:
     def __init__(self):
@@ -14,13 +19,29 @@ class Controller:
 
 
 
-    def processSlamMessage(msg):
+    def processPoseMessage(self, msg):
 
-        currentPosition = message["pose"]["position"]
-        currentOrientation = message["pose"]["orientation"]
+        currentPosition = msg["pose"]["position"]
+        currentOrientation = msg["pose"]["orientation"]
+
+        currentTime = datetime.datetime.now()
+
+        dt = ((currentTime - self.previousTime).microseconds/1e6)
+
+        vx = (currentPosition["x"] - self.previousPosition[0])/dt
+        vy = (currentPosition["y"] - self.previousPosition[1])/dt
+        vz = (currentPosition["z"] - self.previousPosition[2])/dt
+
+        self.previousPosition = [currentPosition["x"], currentPosition["y"], currentPosition["z"]]
+        self.previousTime = currentTime
+
+
+        print("vx: " + str(vx) + ", " + "vy: " + str(vy) + ", " + "vz: " + str(vz))
 
 
 
     
-    def processIMUMessage(msg):
+    def processIMUMessage(self, msg):
+
+        print("Placeholder")
 
