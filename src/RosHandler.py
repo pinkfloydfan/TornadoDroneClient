@@ -29,7 +29,10 @@ class RosHandler():
 
         self.velocityPublisher = roslibpy.Topic(self.client, '/minion/velocity', 'std_msgs/Float32MultiArray')
         self.velocityPublisher.advertise()
-        
+
+        self.imuPublisher = roslibpy.Topic(self.client, '/imu', 'sensor_msgs/Imu')
+        self.imuPublisher.advertise()
+
         self.imagePublisher = roslibpy.Topic(self.client, '/camera/image_compressed/compressed', 'sensor_msgs/CompressedImage')
         self.imagePublisher.advertise()
 
@@ -74,19 +77,42 @@ class RosHandler():
 
     def handleAttitudeMessage(self, msg):
 
+        #betaflight is north - west - up
+
         attitudeList = msg.split(',');
 
-        roll  = attitudeList[0]
-        pitch = attitudeList[1]
-        yaw   = attitudeList[2]
-        
-        '''
-        print("roll: " + roll)
-        print("pitch: " + pitch)
-        print("yaw: " + yaw)
-        '''
+        self.controller.processIMUMessage(attitudeList, self.publishIMUCallback)
 
 
     def publishVelocityCallback(self, velocity):
 
         self.velocityPublisher.publish(roslibpy.Message({"data":velocity}))
+
+    
+    def publishIMUCallback(self, orientation, acceleration, angularVelocity):
+
+        imuMessage = {
+            "orientation": {
+                "x": orientation[0],
+                "y": orientation[1],
+                "z": orientation[2],
+                "w": orientation[3]
+            },
+            "orientation_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0],
+            "linear_acceleration": {
+                "x": acceleration[0],
+                "y": acceleration[1],
+                "z": acceleration[2]
+            },
+            "linear_acceleration_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0],
+            "angular_velocity" : {
+                "x": angularVelocity[0],
+                "y": angularVelocity[1],
+                "z": angularVelocity[2]
+            },
+            "angular_velocity_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0]
+        }
+
+        #print(imuMessage)
+
+        self.imuPublisher.publish(imuMessage)

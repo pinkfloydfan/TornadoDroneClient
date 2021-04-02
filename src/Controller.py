@@ -1,9 +1,6 @@
-#from scipy import rot
+from scipy.spatial.transform import Rotation as R
 import datetime
 
-#visualization
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
 
 class Controller:
     def __init__(self):
@@ -17,12 +14,7 @@ class Controller:
         self.velocityY = 0
         self.velocityZ = 0
 
-        self.vxhist = [0]
-        self.vyhist = [0]
-        self.vzhist = [0]
-
         self.time = [0]
-
 
 
     def processPoseMessage(self, msg, callback):
@@ -51,7 +43,20 @@ class Controller:
 
 
     
-    def processIMUMessage(self, msg):
+    def processIMUMessage(self, msg, callback):
 
-        print("Placeholder")
+
+        r = R.from_euler('xyz', [float(msg[0])/10, float(msg[1])/10, msg[2]], degrees = True)
+        orientation = r.as_quat()
+
+        acceleration = [float(msg[3])*0.02, float(msg[4])*0.02, float(msg[5])*0.02]
+
+        angularVelocity = [float(msg[6]), float(msg[7]), float(msg[8])]
+
+        callback(orientation, acceleration, angularVelocity)
+
+
+
+
+        #print("Placeholder")
 
