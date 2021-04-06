@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import base64
 
+import datetime
+
 from cv_bridge import CvBridge
 from Controller import Controller
 
@@ -39,7 +41,7 @@ class RosHandler():
         self.joyListener = roslibpy.Topic(self.client, '/joy', 'sensor_msgs/Joy')
         self.joyListener.subscribe(lambda message: self.handleJoystickMessage(message))
     
-        self.poseListener = roslibpy.Topic(self.client, '/orb_slam2_mono/pose', 'geometry_msgs/PoseStamped')
+        self.poseListener = roslibpy.Topic(self.client, '/Mono_Inertial/orb_pose', 'geometry_msgs/PoseStamped')
         self.poseListener.subscribe(lambda message: self.handlePoseMessage(message))
 
         
@@ -69,29 +71,48 @@ class RosHandler():
             cv2.imshow("yes", img)
             cv2.waitKey(1)
 
-        rosImg = dict(format='jpeg', data = b64encoded)
+        try: 
+            #rosImg = dict(format='jpeg', data = b64encoded)
+
+            rosImg = {
+                #"header" : {
+                    #"stamp" : roslibpy.Time.now()
+                #},
+                "format" : "jpeg",
+                "data" : b64encoded 
+            }
+            #print("publishing image")
+            self.imagePublisher.publish(rosImg)
+        except:
+            print("Failed to parse image")
+            return
+
 
         #imageMessage = self.bridge.cv2_to_rosImg(img, encoding = "passthrough")
 
-        self.imagePublisher.publish(rosImg)
 
     def handleAttitudeMessage(self, msg):
 
         #betaflight is north - west - up
 
-        attitudeList = msg.split(',');
+        attitudeList = msg.split(',')
 
         self.controller.processIMUMessage(attitudeList, self.publishIMUCallback)
 
 
     def publishVelocityCallback(self, velocity):
+        return
 
-        self.velocityPublisher.publish(roslibpy.Message({"data":velocity}))
+        #self.velocityPublisher.publish(roslibpy.Message({"data":velocity}))
 
     
     def publishIMUCallback(self, orientation, acceleration, angularVelocity):
 
         imuMessage = {
+            #"header" : {
+                #"stamp" : roslibpy.Time.now()
+            #},
+
             "orientation": {
                 "x": orientation[0],
                 "y": orientation[1],
@@ -106,9 +127,9 @@ class RosHandler():
             },
             "linear_acceleration_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0],
             "angular_velocity" : {
-                "x": angularVelocity[0],
-                "y": angularVelocity[1],
-                "z": angularVelocity[2]
+                "x": angularVelocity[0]/10,
+                "y": angularVelocity[1]/10,
+                "z": angularVelocity[2]/10
             },
             "angular_velocity_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0]
         }

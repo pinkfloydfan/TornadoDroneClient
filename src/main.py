@@ -36,9 +36,9 @@ class Client(tornado.websocket.WebSocketHandler):
         self.ws = None
         self.rosHandler = RosHandler(self)
         self.connect()
-        PeriodicCallback(self.keep_alive, 20000).start()
+        PeriodicCallback(self.keep_alive, 200).start()
         PeriodicCallback(self.getJoystickCommands, 200).start()
-        PeriodicCallback(self.getPose, 200).start()
+        #PeriodicCallback(self.getPose, 200).start()
 
         self.ioloop.start()
         self.ioloop.make_current()
@@ -60,17 +60,22 @@ class Client(tornado.websocket.WebSocketHandler):
         while True:
             #MARK: improve 
             msg = yield self.ws.read_message()
-            if msg is None:
-                print ("connection closed")
-                self.ws = None
-                break
             
-            #print("message received")
-            if (type(msg) is bytes):
-                self.rosHandler.handleImageMessage(msg)
-            else:
-                self.rosHandler.handleAttitudeMessage(msg)
-            #parsed = json.loads(msg)
+            #iffy
+            
+            if msg is None:
+                print ("null message received")
+                self.connect()
+                break
+            else:            
+                #print("message received")
+                if (type(msg) is bytes):
+                    #print("image")
+                    self.rosHandler.handleImageMessage(msg)
+                else:
+                    #print("imu")
+                    self.rosHandler.handleAttitudeMessage(msg)
+                #parsed = json.loads(msg)
             
             
 
@@ -89,7 +94,11 @@ class Client(tornado.websocket.WebSocketHandler):
         
         #print(msg)
         if self.ws is not None:
-            self.ws.write_message(msg)
+            try:
+                self.ws.write_message(msg)
+            except:
+                print("websocket is broken")
+
 
 
     def getPose(self):
