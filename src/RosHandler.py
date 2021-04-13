@@ -9,6 +9,8 @@ import datetime
 from cv_bridge import CvBridge
 from Controller import Controller
 
+from io import StringIO
+
 
 # class in charge of RosLibPy and parsing/sending ROS messages
 class RosHandler():
@@ -49,6 +51,8 @@ class RosHandler():
 
         self.armed = False
 
+        self.imageBuffer = ""
+
     def handlePoseMessage(self, message):
 
         self.controller.processPoseMessage(message, self.publishVelocityCallback)
@@ -65,19 +69,22 @@ class RosHandler():
 
         b64encoded = base64.b64encode(nparr).decode('ascii')
 
+        self.imageBuffer = b64encoded
 
+        
         if self.showRawCapture == True:
             img = cv2.imdecode(nparr, flags=cv2.IMREAD_GRAYSCALE)
             cv2.imshow("yes", img)
             cv2.waitKey(1)
 
+        '''
         try: 
             #rosImg = dict(format='jpeg', data = b64encoded)
 
             rosImg = {
-                #"header" : {
-                    #"stamp" : roslibpy.Time.now()
-                #},
+                "header" : {
+                    "stamp" : roslibpy.Time.now()
+                },
                 "format" : "jpeg",
                 "data" : b64encoded 
             }
@@ -86,16 +93,34 @@ class RosHandler():
         except:
             print("Failed to parse image")
             return
+        '''
 
 
         #imageMessage = self.bridge.cv2_to_rosImg(img, encoding = "passthrough")
+    def publishImage(self, timestamp):
+        try: 
+
+            rosImg = {
+                "header" : {
+                    "stamp" : roslibpy.Time.from_sec(timestamp/1000)
+                },
+                "format" : "jpeg",
+                "data" : self.imageBuffer 
+            }
+            #print("publishing image")
+            self.imagePublisher.publish(rosImg)
+        except:
+            print("Failed to parse image")
+            return
 
 
     def handleAttitudeMessage(self, msg):
 
         #betaflight is north - west - up
 
-        attitudeList = msg.split(',')
+        #print(msg)
+
+        attitudeList = np.genfromtxt(StringIO(msg), delimiter = ",")
 
         self.controller.processIMUMessage(attitudeList, self.publishIMUCallback)
 
@@ -106,12 +131,12 @@ class RosHandler():
         #self.velocityPublisher.publish(roslibpy.Message({"data":velocity}))
 
     
-    def publishIMUCallback(self, orientation, acceleration, angularVelocity):
+    def publishIMUCallback(self, orientation, acceleration, angularVelocity, timestamp, isImageFrame):
 
         imuMessage = {
-            #"header" : {
-                #"stamp" : roslibpy.Time.now()
-            #},
+            "header" : {
+                "stamp" : roslibpy.Time.from_sec(timestamp/1000)
+            },
 
             "orientation": {
                 "x": orientation[0],
@@ -127,9 +152,9 @@ class RosHandler():
             },
             "linear_acceleration_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0],
             "angular_velocity" : {
-                "x": angularVelocity[0]/10,
-                "y": angularVelocity[1]/10,
-                "z": angularVelocity[2]/10
+                "x": angularVelocity[0],
+                "y": angularVelocity[1],
+                "z": angularVelocity[2]
             },
             "angular_velocity_covariance": [-1, 0, 0, 0, 0, 0, 0, 0, 0]
         }
@@ -137,3 +162,6 @@ class RosHandler():
         #print(imuMessage)
 
         self.imuPublisher.publish(imuMessage)
+
+        if isImageFrame == True:
+            self.publishImage(timestamp)

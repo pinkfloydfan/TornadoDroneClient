@@ -40,20 +40,26 @@ class Controller:
 
         callback(returnArr)
 
-
-
-    
     def processIMUMessage(self, msg, callback):
 
 
-        r = R.from_euler('xyz', [float(msg[0])/10, float(msg[1])/10, msg[2]], degrees = True)
+        r = R.from_euler('xyz', [msg[0], msg[1], msg[2]], degrees = True)
         orientation = r.as_quat()
 
-        acceleration = [float(msg[3])*0.02, float(msg[4])*0.02, float(msg[5])*0.02]
+        acceleration = [msg[3], msg[4], msg[5]]
 
-        angularVelocity = [float(msg[6]), float(msg[7]), float(msg[8])]
+        angularVelocity = [msg[6], msg[7], msg[8]]
 
-        callback(orientation, acceleration, angularVelocity)
+        timestamp = msg[9]
+
+        isImageFrame = msg[10]
+
+        if isImageFrame == 0:
+            callback(orientation, acceleration, angularVelocity, timestamp, False)
+        else:
+            callback(orientation, acceleration, angularVelocity, timestamp, True)
+
+        
 
 
 
