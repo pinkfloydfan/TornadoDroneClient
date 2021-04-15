@@ -55,9 +55,9 @@ class Controller:
         isImageFrame = msg[10]
 
         if isImageFrame == 0:
-            callback(orientation, acceleration, angularVelocity, timestamp, False)
+            callback(orientation, acceleration, angularVelocity, timestamp, False, 0)
         else:
-            callback(orientation, acceleration, angularVelocity, timestamp, True)
+            callback(orientation, acceleration, angularVelocity, timestamp, True, isImageFrame)
 
         
 

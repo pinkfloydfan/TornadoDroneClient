@@ -131,7 +131,7 @@ class RosHandler():
         #self.velocityPublisher.publish(roslibpy.Message({"data":velocity}))
 
     
-    def publishIMUCallback(self, orientation, acceleration, angularVelocity, timestamp, isImageFrame):
+    def publishIMUCallback(self, orientation, acceleration, angularVelocity, timestamp, isImageFrame, imageTimestamp):
 
         imuMessage = {
             "header" : {
